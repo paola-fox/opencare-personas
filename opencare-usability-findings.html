@@ -1,0 +1,720 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opencare patient booking — usability findings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#E7EBEC;
+    --surface:#FFFFFF;
+    --surface-sunk:#F2F5F5;
+    --ink:#12262D;
+    --ink-soft:#546469;
+    --ink-faint:#8A979B;
+    --line:#D4DBDC;
+    --line-strong:#B9C3C5;
+    --accent:#0F5A66;
+    --friction:#AC2A4C;
+    --friction-bg:#FBEAEE;
+    --support:#A8710F;
+    --support-bg:#FBF2E2;
+    --works:#177C6C;
+    --works-bg:#E6F2F0;
+    --none:#BFC8CA;
+    --radius:3px;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+  button{font:inherit;color:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:0 20px 96px}
+
+  /* ---------- masthead ---------- */
+  .masthead{padding:40px 0 24px}
+  .masthead h1{
+    font-family:Newsreader,Georgia,serif;
+    font-weight:500;
+    font-size:clamp(28px,4.4vw,44px);
+    line-height:1.1;
+    letter-spacing:-.015em;
+    margin:0 0 10px;
+    max-width:19ch;
+  }
+  .standfirst{
+    font-family:Newsreader,Georgia,serif;
+    font-size:17px;line-height:1.55;color:var(--ink-soft);max-width:62ch;margin:0;
+  }
+  .tally{
+    display:flex;flex-wrap:wrap;gap:8px 28px;
+    margin-top:20px;padding-top:16px;border-top:1px solid var(--line);
+  }
+  .tally div{display:flex;align-items:baseline;gap:7px}
+  .tally b{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+  .tally span{font-size:13px;color:var(--ink-soft)}
+
+  /* ---------- legend, pinned near the top ---------- */
+  .legend{
+    position:sticky;top:0;z-index:6;
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;
+    background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius);
+    padding:11px 16px;margin-bottom:26px;
+  }
+  .legend b{font-size:12px;font-weight:600;color:var(--ink-faint);margin-right:2px}
+  .legend span{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft)}
+  .dot{display:inline-block;width:13px;height:13px;border-radius:50%;flex:none}
+  .dot.friction{background:var(--friction)}
+  .dot.support{background:var(--support);opacity:.55}
+  .dot.works{background:none;border:1.5px solid var(--works)}
+  .dot.none{background:none;border:1px dashed var(--none)}
+
+  /* ---------- workspace ---------- */
+  .workspace{display:grid;grid-template-columns:236px 1fr;gap:30px;align-items:start}
+
+  .rail{position:sticky;top:66px;display:flex;flex-direction:column;gap:22px}
+  .rail section{display:flex;flex-direction:column;gap:9px}
+  .rail h3{margin:0;font-size:12px;font-weight:600;color:var(--ink-faint)}
+  .search input{
+    width:100%;padding:9px 11px;font:inherit;font-size:14px;background:var(--surface);
+    border:1px solid var(--line-strong);border-radius:var(--radius);color:var(--ink);
+  }
+  .search input::placeholder{color:var(--ink-faint)}
+  .opt{
+    display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--ink-soft);
+    background:none;border:0;padding:4px 6px;margin-left:-6px;border-radius:var(--radius);
+    text-align:left;width:calc(100% + 6px);
+  }
+  .opt:hover{background:#DDE3E4;color:var(--ink)}
+  .opt .box{
+    width:13px;height:13px;flex:none;border:1.5px solid var(--line-strong);border-radius:2px;
+    background:var(--surface);display:flex;align-items:center;justify-content:center;
+  }
+  .opt[aria-pressed="true"]{color:var(--ink);font-weight:500}
+  .opt[aria-pressed="true"] .box{background:var(--ink);border-color:var(--ink)}
+  .opt[aria-pressed="true"] .box::after{content:"";width:5px;height:8px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(42deg) translate(-1px,-1px)}
+  .opt.radio .box{border-radius:50%}
+  .opt.radio[aria-pressed="true"] .box::after{content:"";width:5px;height:5px;border:0;background:#fff;border-radius:50%;transform:none}
+  .opt em{font-style:normal;margin-left:auto;font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+  .rail .text-btn{background:none;border:0;padding:0;font-size:13px;color:var(--accent);text-decoration:underline;text-underline-offset:3px;align-self:flex-start}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--line-strong);
+  }
+  .toolbar p{margin:0;font-size:13px;color:var(--ink-soft)}
+  .toolbar .acts{display:flex;gap:8px;flex-wrap:wrap}
+  .ghost{
+    background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius);
+    padding:6px 11px;font-size:13px;color:var(--ink-soft);
+  }
+  .ghost:hover{border-color:var(--ink);color:var(--ink)}
+
+  /* ---------- table ---------- */
+  .table-shell{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  table{border-collapse:collapse;width:100%;table-layout:auto}
+  thead th{
+    position:sticky;top:47px;z-index:4;background:var(--surface);
+    font-size:12px;font-weight:600;color:var(--ink-soft);text-align:left;
+    padding:10px 8px;border-bottom:1px solid var(--line-strong);
+  }
+  thead th.people{text-align:center;width:74px;padding:6px 4px}
+  thead th.people button{background:none;border:0;padding:5px 7px;border-radius:var(--radius);font-size:12px;font-weight:600;color:var(--ink-soft)}
+  thead th.people button:hover{background:var(--surface-sunk);color:var(--ink)}
+  thead th.people button[aria-pressed="true"]{background:var(--ink);color:#fff}
+  thead th.score{text-align:right;white-space:nowrap}
+  thead th.chev{width:34px}
+
+  tr.row{cursor:pointer;border-bottom:1px solid var(--line)}
+  tr.row:hover td{background:var(--surface-sunk)}
+  tr.row.open td{background:#EAF1F1}
+  tr.row td{padding:11px 8px;vertical-align:top}
+  td.title{padding-left:14px;font-size:14px;line-height:1.35}
+  td.title .num{font-variant-numeric:tabular-nums;color:var(--ink-faint);font-size:12px;margin-right:9px}
+  td.title .stage{display:block;font-size:12px;color:var(--accent);margin-top:4px}
+  td.title .inline-pips{display:none;gap:4px;margin-top:7px}
+  td.cell{text-align:center}
+  td.score{text-align:right;font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.chev{text-align:center;color:var(--ink-faint);font-size:12px;padding-right:12px}
+  tr.row.open td.chev span{display:inline-block;transform:rotate(180deg)}
+
+  tr.detail{display:none;border-bottom:1px solid var(--line)}
+  tr.detail.open{display:table-row}
+  tr.detail td{padding:4px 22px 20px 44px;background:#FBFCFC}
+
+  .ev{padding:14px 0;border-bottom:1px dotted var(--line-strong)}
+  .ev:last-of-type{border-bottom:0}
+  .ev.muted{opacity:.5}
+  .ev-top{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .ev-name{font-size:13.5px;font-weight:600}
+  .ev-tag{font-size:11.5px;padding:1px 7px;border-radius:20px;white-space:nowrap}
+  .ev-tag.friction{background:var(--friction-bg);color:var(--friction)}
+  .ev-tag.support{background:var(--support-bg);color:var(--support)}
+  .ev-tag.works{background:var(--works-bg);color:var(--works)}
+  .ev-tag.none{background:var(--surface-sunk);color:var(--ink-faint)}
+  .ev-note{margin:0;font-size:14px;line-height:1.5;color:var(--ink-soft);max-width:70ch}
+  blockquote{
+    margin:8px 0 0;padding-left:14px;border-left:2px solid var(--line-strong);
+    font-family:Newsreader,Georgia,serif;font-size:17px;line-height:1.5;color:var(--ink);max-width:62ch;
+  }
+  .ts{margin-top:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--ink-faint)}
+  .detail-foot{padding-top:14px;border-top:1px solid var(--line)}
+
+  .pip{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .pip.friction{background:var(--friction)}
+  .pip.support{background:var(--support);opacity:.55}
+  .pip.works{background:none;border:1.5px solid var(--works)}
+  .pip.none{background:none;border:1px dashed var(--none)}
+
+  .empty{padding:44px 26px;text-align:center}
+  .empty p{margin:0 0 14px;font-size:14px;color:var(--ink-soft)}
+
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
+    background:var(--ink);color:#fff;font-size:13px;padding:9px 16px;border-radius:20px;
+    opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  @media (max-width:900px){
+    .workspace{grid-template-columns:1fr;gap:22px}
+    .rail{position:static;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+    thead th{top:0}
+    thead th.people,td.cell{display:none}
+    td.title .inline-pips{display:flex}
+    tr.detail td{padding:4px 14px 18px 14px}
+    .legend{position:static}
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <h1>Where patients get stuck booking with Opencare</h1>
+    <p class="standfirst">Twenty-two usability findings from five moderated sessions, held against every participant so you can see how widely each one lands. Filter the table, open a row to read the verbatims.</p>
+    <div class="tally">
+      <div><b>22</b><span>findings</span></div>
+      <div><b>5</b><span>participants</span></div>
+      <div><b id="tallyWide">—</b><span>hit by 4 or more</span></div>
+      <div><b id="tallyObs">—</b><span>friction observations</span></div>
+      <div><b id="tallyCounter">—</b><span>counter-signals worth checking</span></div>
+    </div>
+  </header>
+
+  <div class="legend">
+    <b>What the dots mean</b>
+    <span><i class="dot friction"></i> Clear friction</span>
+    <span><i class="dot support"></i> Supporting signal</span>
+    <span><i class="dot works"></i> Worked for them</span>
+    <span><i class="dot none"></i> Not observed</span>
+  </div>
+
+  <div class="workspace">
+
+    <aside class="rail">
+      <section class="search">
+        <h3>Search</h3>
+        <input id="q" type="search" placeholder="Insurance, email, pending…" autocomplete="off">
+      </section>
+
+      <section>
+        <h3>How widely it lands</h3>
+        <div id="spreadFilters"></div>
+      </section>
+
+      <section>
+        <h3>Who ran into it</h3>
+        <div id="personFilters"></div>
+      </section>
+
+      <section>
+        <h3>Where in the journey</h3>
+        <div id="stageFilters"></div>
+      </section>
+
+      <section>
+        <h3>Order by</h3>
+        <div id="sortFilters"></div>
+      </section>
+
+      <button class="text-btn" id="reset">Clear all filters</button>
+    </aside>
+
+    <main>
+      <div class="toolbar">
+        <p id="count">Showing all 22 findings</p>
+        <div class="acts">
+          <button class="ghost" id="expandAll">Open all</button>
+          <button class="ghost" id="collapseAll">Close all</button>
+          <button class="ghost" id="copyAll">Copy these as notes</button>
+        </div>
+      </div>
+
+      <div class="table-shell">
+        <table>
+          <thead><tr id="thead"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const PEOPLE = ["Patrick","Lacey","Tamara","Jenna","Gordon"];
+const STAGES = [
+  "Search & matching",
+  "Booking funnel",
+  "After the request",
+  "Appointment surface",
+  "Reviews & rewards",
+  "Coming back"
+];
+
+/* s: f = friction, s = supporting, w = worked, n = not observed */
+const DATA = [
+  {n:1, stage:"Search & matching",
+   title:"Search results do not consistently honor preferences given in the funnel",
+   ev:{
+    Patrick:{s:"f", note:"Asked for mornings, then questioned why a result without morning availability appeared.", q:"Curious why that one's popping up.", ts:"Pt.1 12:28–12:35"},
+    Lacey:{s:"w", note:"Moved to a match without meaningful relevance friction."},
+    Tamara:{s:"f", note:"Selected Invisalign, then found recommended practices that don't offer it.", q:"Interesting that this option came up.", ts:"15:05–15:38"},
+    Jenna:{s:"n"},
+    Gordon:{s:"f", note:"Timeframe and time-of-day answers appeared to be ignored.", q:"Those answers didn't impact the match results.", ts:"10:18–11:51"}
+   }},
+
+  {n:2, stage:"Search & matching",
+   title:"Map and location interactions can make search harder rather than easier",
+   ev:{
+    Patrick:{s:"f", note:"Could not expand the map, find the exact address easily, or find an obvious route back to matches.", ts:"Pt.1 13:02–15:01"},
+    Lacey:{s:"n"},
+    Tamara:{s:"f", note:"Map moved unexpectedly, her location changed by accident, the map failed to reload, and the way back was unclear.", ts:"12:48–19:17"},
+    Jenna:{s:"w", note:"Location and map link worked as expected after booking."},
+    Gordon:{s:"w", note:"Went to the map naturally and used it successfully to judge proximity.", ts:"09:36–10:12"}
+   }},
+
+  {n:3, stage:"Search & matching",
+   title:"Practice cards and profiles don't give enough differentiation or confidence signals",
+   ev:{
+    Patrick:{s:"f", note:"Said uniformly high ratings become meaningless.", q:"I'm not getting a good sense for what makes these practices any different.", ts:"Pt.1 09:50–10:12; 12:55–13:00"},
+    Lacey:{s:"s", note:"Needed considerably more practice and provider information before she felt confident."},
+    Tamara:{s:"s", note:"Rating, location and service fit were central to how she evaluated options."},
+    Jenna:{s:"s", note:"Reviews were one of her primary decision factors.", ts:"10:10–11:56"},
+    Gordon:{s:"f", note:"Leaned on review volume, rating, photos and provider details — but photos were buried enough that he might never find them.", ts:"11:57–15:45"}
+   }},
+
+  {n:4, stage:"Booking funnel",
+   title:"Requests for personal and sensitive data need stronger trust context",
+   ev:{
+    Patrick:{s:"f", note:"Wanted date-of-birth and personal data asks to explain why the information is needed and that it goes to the practice.", ts:"Pt.1 18:29–18:50"},
+    Lacey:{s:"f", note:"Would hesitate to send ID with her address and personal details through an unfamiliar system without speaking to the office first.", ts:"18:23–18:45"},
+    Tamara:{s:"f", note:"Wanted to understand the company before handing over information.", q:"I like to have a little bit more information about a company before I start signing up.", ts:"06:42–07:06"},
+    Jenna:{s:"n"},
+    Gordon:{s:"f", note:"Said he might not give his email to an unfamiliar brand or site.", ts:"08:35–08:57"}
+   }},
+
+  {n:5, stage:"Booking funnel",
+   title:"Information users already gave doesn't carry forward",
+   ev:{
+    Patrick:{s:"f", note:"Had to re-enter his email, and asked for anything possible to carry over.", ts:"Pt.1 15:25–15:33; 19:05–19:17"},
+    Lacey:{s:"f", note:"Questioned the point of entering her email earlier.", q:"What's the point of putting in my email earlier… whenever I have to put it in again?", ts:"12:47–12:52"},
+    Tamara:{s:"n"},
+    Jenna:{s:"n"},
+    Gordon:{s:"f", note:"Hit the same repeat entry.", q:"Earlier on, I already put in my email. Why am I putting in my email again?", ts:"16:34–16:45"}
+   }},
+
+  {n:6, stage:"Booking funnel",
+   title:"Insurance details may not be known or to hand at booking time",
+   ev:{
+    Patrick:{s:"f", note:"Naming the exact plan became a hard blocker.", q:"I would probably like stop here… I don't know the easiest way to actually find that information.", ts:"Pt.1 17:35–17:51"},
+    Lacey:{s:"s", note:"Could not readily find her insurance information during setup.", ts:"08:42"},
+    Tamara:{s:"f", note:"Was unsure about her coverage and guessed an answer.", ts:"09:21–09:39"},
+    Jenna:{s:"w", note:"Found insurance entry straightforward."},
+    Gordon:{s:"f", note:"Did not have his insurance or card with him when it was requested.", ts:"07:53–08:00; 20:40–20:58"}
+   }},
+
+  {n:7, stage:"Booking funnel",
+   title:"Insurance state isn't consistently respected or kept across the experience",
+   ev:{
+    Patrick:{s:"f", note:"Had provided Delta Dental plan details and a photo, then found insurance missing from Settings.", ts:"Pt.2 09:10–10:40"},
+    Lacey:{s:"f", note:"Identified herself as a cash patient but kept seeing Add insurance and Share insurance prompts.", ts:"15:37–16:30"},
+    Tamara:{s:"n"},
+    Jenna:{s:"w", note:"Insurance state worked smoothly for her."},
+    Gordon:{s:"n"}
+   }},
+
+  {n:8, stage:"After the request",
+   title:"The pending state doesn't say who owns the next move",
+   ev:{
+    Patrick:{s:"f", note:"Did not know whether he or the practice needed to act.", q:"I don't know who is pending.", ts:"Pt.1 26:42–27:57"},
+    Lacey:{s:"f", note:"The requested state didn't stick — confirmation language dominated her understanding.", ts:"52:00–53:41"},
+    Tamara:{s:"f", note:"Read request sent as \u201cI'll wait for their text\u201d and would close the experience there.", ts:"22:11–23:02"},
+    Jenna:{s:"w", note:"Correctly understood that the appointment was still pending.", ts:"19:50–22:02"},
+    Gordon:{s:"f", note:"Left without a next step.", q:"What's the next step? Am I done here? Can I close this? Am I waiting for something?", ts:"19:56–20:13"}
+   }},
+
+  {n:9, stage:"After the request",
+   title:"The post-request insurance action is too easy to miss, or lands without a clear outcome",
+   ev:{
+    Patrick:{s:"f", note:"Found the action tucked away.", q:"Share insurance details with practice is a little hidden… something I would easily miss.", ts:"Pt.1 22:16–22:25"},
+    Lacey:{s:"f", note:"Insurance was highly visible but wrong for her cash-patient state, so the action made no sense.", ts:"15:37–16:30"},
+    Tamara:{s:"f", note:"Said she would have acted if the copy had explicitly said insurance was the next step needed to confirm.", ts:"46:17–47:39"},
+    Jenna:{s:"w", note:"Immediately understood insurance was her next action.", ts:"19:50–20:14"},
+    Gordon:{s:"f", note:"Did not register an action at all.", q:"I totally missed it if there was an action there.", ts:"22:01–22:52"}
+   }},
+
+  {n:10, stage:"After the request",
+   title:"Users need clearer expectations for how long confirmation takes",
+   ev:{
+    Patrick:{s:"f", note:"Said he would ask the practice what the typical timelines look like.", ts:"Pt.1 24:39–25:16"},
+    Lacey:{s:"s", note:"Wanted a clearer expectation that someone from the practice would follow up.", ts:"27:23–28:20"},
+    Tamara:{s:"s", note:"Expected the practice to contact her later but had no sense of when."},
+    Jenna:{s:"f", note:"Asked for a stated window and when to escalate.", q:"Two to four hours, 24 to 48 hours or what?", ts:"23:02–23:35; 42:16–42:44"},
+    Gordon:{s:"s", note:"Knew he was waiting but had no timing expectation.", ts:"19:56–20:13"}
+   }},
+
+  {n:11, stage:"After the request",
+   title:"Communication channels don't form a clear model of who to contact, where, and how replies arrive",
+   ev:{
+    Patrick:{s:"f", note:"Missed Message practice, defaulted to Support, then assumed all messages went to the practice.", ts:"Pt.1 30:31–36:36"},
+    Lacey:{s:"f", note:"Was unsure whether she was talking to a person or an AI, and wanted clearer follow-up from the practice.", ts:"27:23–30:16"},
+    Tamara:{s:"f", note:"Would text or call first — those channels felt clearer and faster than reopening Opencare.", ts:"31:45–37:45"},
+    Jenna:{s:"w", note:"Found contact and support options easy and centralised.", ts:"24:04–24:59"},
+    Gordon:{s:"f", note:"Expected external confirmation and said he might not know how to get back in after closing the browser.", ts:"29:55–31:59"}
+   }},
+
+  {n:12, stage:"Appointment surface",
+   title:"Practice and provider information isn't prominent when users need it",
+   ev:{
+    Patrick:{s:"f", note:"Wanted exact location and contact details in one compact place — how to get there, how to contact them.", ts:"Pt.1 13:02–15:01; 33:51–34:50"},
+    Lacey:{s:"f", note:"Could not get back to the practice profile after booking and said she would switch to Google.", ts:"21:22–23:55"},
+    Tamara:{s:"n"},
+    Jenna:{s:"s", note:"Wanted provider headshots and practice imagery — seeing the dentist beforehand adds confidence.", ts:"38:47–40:36"},
+    Gordon:{s:"f", note:"Hunted for office and provider details; said photos sat far enough down that a browsing user might give up first.", ts:"13:34–14:50"}
+   }},
+
+  {n:13, stage:"Appointment surface",
+   title:"High-priority appointment actions aren't where users expect them",
+   ev:{
+    Patrick:{s:"f", note:"Missed Message practice despite it being on screen and defaulted to footer actions.", ts:"Pt.1 32:25–33:09"},
+    Lacey:{s:"f", note:"Wanted Reschedule, Cancel and profile actions directly on the main appointment surface.", ts:"24:28–25:14; 47:31–51:30"},
+    Tamara:{s:"w", note:"Found cancellation naturally: Appointment → View appointment → Cancel.", ts:"34:27–35:12"},
+    Jenna:{s:"w", note:"Described the page as an intuitive one-stop shop.", ts:"24:04–24:59"},
+    Gordon:{s:"f", note:"Initially missed Cancel and Reschedule at the bottom; wanted them beside the date and time.", ts:"32:19–33:40"}
+   }},
+
+  {n:14, stage:"Appointment surface",
+   title:"Appointment structure makes users lose track of where they are",
+   ev:{
+    Patrick:{s:"f", note:"Was confused about the purpose of the appointment summary versus View appointment, and said he was struggling.", ts:"Pt.1 35:25–36:16"},
+    Lacey:{s:"f", note:"Got lost getting back to her appointment dashboard and wanted a clearer route back.", ts:"36:35–38:03; 48:25–48:46"},
+    Tamara:{s:"w", note:"Cancellation and navigation felt natural."},
+    Jenna:{s:"w", note:"Appointment page felt simple and complete."},
+    Gordon:{s:"s", note:"Action hierarchy meant excessive scrolling, though he didn't get broadly lost."}
+   }},
+
+  {n:15, stage:"Coming back",
+   title:"The relationship between the browser experience and the app is unclear",
+   ev:{
+    Patrick:{s:"f", note:"Saw app prompts and didn't see the point.", q:"Why would I need that app?", ts:"Pt.2 10:45–12:08"},
+    Lacey:{s:"n"},
+    Tamara:{s:"f", note:"Was unsure what the app was for — the browser already seemed able to do everything.", ts:"39:10–45:28"},
+    Jenna:{s:"n"},
+    Gordon:{s:"f", note:"Could not see the upside of installing.", q:"Why would I need the app?… What's the benefit?", ts:"28:20–28:52"}
+   }},
+
+  {n:16, stage:"Coming back",
+   title:"Opencare doesn't establish a compelling role after the immediate booking task",
+   ev:{
+    Patrick:{s:"f", note:"Said he might never return unless there was a message or a reward; expected future value around his dentist and appointments.", ts:"Pt.2 15:08–17:28"},
+    Lacey:{s:"f", note:"Would mainly return for a review or reward prompt, or her next six-month cleaning.", ts:"31:44–32:49"},
+    Tamara:{s:"f", note:"Said it was unclear what she could actually do in Opencare after the immediate experience.", ts:"44:43–45:28"},
+    Jenna:{s:"w", note:"Saw strong repeat-booking value and would use it again because it cut the back-and-forth.", ts:"33:19–35:04"},
+    Gordon:{s:"f", note:"Questioned the need for stored insurance or the app — once he finds a good dentist he expects to stay.", ts:"27:09–28:52"}
+   }},
+
+  {n:17, stage:"Coming back",
+   title:"The product doesn't shift from “find a dentist” to “my dentist”",
+   ev:{
+    Patrick:{s:"f", note:"Expected the post-visit experience to become about his new dentist, with direct repeat booking.", ts:"Pt.2 03:21–04:21"},
+    Lacey:{s:"f", note:"Book appointment read as finding another dentist when she expected to return to her existing one.", ts:"35:41–38:17"},
+    Tamara:{s:"n"},
+    Jenna:{s:"s", note:"Explicitly saw value in rebooking the same practice through Opencare.", ts:"33:19–35:04"},
+    Gordon:{s:"s", note:"Assumed that after finding a good dentist he would stick with them long-term.", ts:"27:09–28:16"}
+   }},
+
+  {n:18, stage:"Reviews & rewards",
+   title:"Review entry points aren't compelling or obviously tappable",
+   ev:{
+    Patrick:{s:"f", note:"Found the review button hidden and said he would need a prompt to engage.", ts:"Pt.2 05:16–06:02"},
+    Lacey:{s:"f", note:"Expected the whole “Tell us about your visit” area to be tappable, not only the CTA.", ts:"33:42–34:09"},
+    Tamara:{s:"n"},
+    Jenna:{s:"n"},
+    Gordon:{s:"n"}
+   }},
+
+  {n:19, stage:"Reviews & rewards",
+   title:"The review flow asks for more effort than users expect from an optional contribution",
+   ev:{
+    Patrick:{s:"f", note:"Preferred a very light star rating and normally avoids typed reviews.", ts:"Pt.2 05:16–06:02"},
+    Lacey:{s:"f", note:"The 50-character minimum triggered “I'd probably bail”; the mounting requirements left her ready to abandon.", ts:"40:04–40:46; 45:50–47:00"},
+    Tamara:{s:"n"},
+    Jenna:{s:"w", note:"Found the reward claim flow quick and intuitive.", ts:"31:27–32:00"},
+    Gordon:{s:"f", note:"Said reviews elsewhere take five seconds or less, would likely quit at the character minimum, and called the flow onerous.", ts:"37:24–42:18"}
+   }},
+
+  {n:20, stage:"Reviews & rewards",
+   title:"Uploading a receipt inside a review has no clear value exchange",
+   ev:{
+    Patrick:{s:"n"},
+    Lacey:{s:"f", note:"Would bail because it added unexpected work with no benefit to her.", q:"Why do you need a receipt?", ts:"42:17–43:32"},
+    Tamara:{s:"n"},
+    Jenna:{s:"w", note:"Read the receipt as proof of attendance straight away and had no concern.", ts:"29:23–31:49"},
+    Gordon:{s:"f", note:"Compared the requirement unfavourably with other review products.", q:"Why am I uploading a receipt? Like, I'm giving a review…", ts:"38:52–40:12"}
+   }},
+
+  {n:21, stage:"Reviews & rewards",
+   title:"Referral actions aren't as direct or predictable as they could be",
+   ev:{
+    Patrick:{s:"f", note:"The referral CTA didn't look clickable, and didn't signal that tapping opens a text-sharing flow.", ts:"Pt.2 07:36–08:50"},
+    Lacey:{s:"n"},
+    Tamara:{s:"f", note:"Wanted the referral link exposed directly instead of Learn more → Copy link.", ts:"43:31–43:55"},
+    Jenna:{s:"w", note:"Was willing to refer after claiming her reward."},
+    Gordon:{s:"w", note:"Found copying and sharing the referral link straightforward.", ts:"25:03–25:11"}
+   }},
+
+  {n:22, stage:"Reviews & rewards",
+   title:"Reward state and eligibility messaging creates uncertainty",
+   ev:{
+    Patrick:{s:"f", note:"After the visit, questioned why he hadn't earned anything and explored whether another booking would generate a reward.", ts:"Pt.2 06:48–07:22"},
+    Lacey:{s:"s", note:"Expected the past-appointment state to surface reward redemption clearly if she'd entered through a reward offer.", ts:"35:00–35:38"},
+    Tamara:{s:"f", note:"“Earn rewards by booking visits” felt misleading — attendance earns it, not booking — and the available-rewards count made her think she already had one.", ts:"43:03–44:26"},
+    Jenna:{s:"w", note:"Reward claim and approval timeline were clear."},
+    Gordon:{s:"s", note:"Discovered rewards only incidentally, after booking.", ts:"24:35–24:59"}
+   }}
+];
+
+const LABEL = {f:"Friction", s:"Supporting", w:"Worked", n:"Not observed"};
+const CLASS = {f:"friction", s:"support", w:"works", n:"none"};
+
+const tally = (d,k) => PEOPLE.filter(p => d.ev[p].s === k).length;
+DATA.forEach(d => { d.fr = tally(d,"f"); d.sup = tally(d,"s"); d.wk = tally(d,"w"); });
+
+const state = {q:"", spread:"all", people:new Set(), stages:new Set(), sort:"impact"};
+const openSet = new Set();
+
+document.getElementById("tallyWide").textContent = DATA.filter(d => d.fr >= 4).length;
+document.getElementById("tallyObs").textContent = DATA.reduce((a,d) => a + d.fr, 0);
+document.getElementById("tallyCounter").textContent = DATA.reduce((a,d) => a + d.wk, 0);
+
+/* ---------- table head ---------- */
+const thead = document.getElementById("thead");
+thead.innerHTML = `<th>Finding</th>` +
+  PEOPLE.map(p => `<th class="people" scope="col"><button data-person="${p}" aria-pressed="false" title="Filter to what ${p} ran into">${p}</button></th>`).join("") +
+  `<th class="score">Friction</th><th class="chev"><span class="visually-hidden"></span></th>`;
+
+function syncHead(){
+  thead.querySelectorAll("[data-person]").forEach(b =>
+    b.setAttribute("aria-pressed", state.people.has(b.dataset.person)));
+}
+thead.querySelectorAll("[data-person]").forEach(b => b.onclick = e => {
+  e.stopPropagation();
+  const p = b.dataset.person;
+  state.people.has(p) ? state.people.delete(p) : state.people.add(p);
+  syncHead(); render();
+});
+
+/* ---------- filter rail ---------- */
+function optionRow(container, items, isRadio, isActive, onPick){
+  container.innerHTML = items.map(it => `
+    <button class="opt ${isRadio ? "radio" : ""}" data-val="${it.val}" aria-pressed="${isActive(it.val)}">
+      <i class="box"></i><span>${it.label}</span>${it.meta !== undefined ? `<em>${it.meta}</em>` : ""}
+    </button>`).join("");
+  container.querySelectorAll(".opt").forEach(b => b.onclick = () => { onPick(b.dataset.val); render(); });
+}
+
+function buildFilters(){
+  optionRow(document.getElementById("spreadFilters"), [
+    {val:"all",   label:"Everything"},
+    {val:"wide",  label:"4 or 5 people"},
+    {val:"split", label:"3 people"},
+    {val:"few",   label:"1 or 2 people"},
+    {val:"mixed", label:"Has a counter-signal"}
+  ], true, v => state.spread === v, v => { state.spread = v; });
+
+  optionRow(document.getElementById("personFilters"),
+    PEOPLE.map(p => ({val:p, label:p, meta:DATA.filter(d => d.ev[p].s === "f").length})), false,
+    v => state.people.has(v),
+    v => { state.people.has(v) ? state.people.delete(v) : state.people.add(v); syncHead(); });
+
+  optionRow(document.getElementById("stageFilters"),
+    STAGES.map(s => ({val:s, label:s, meta:DATA.filter(d => d.stage === s).length})), false,
+    v => state.stages.has(v), v => { state.stages.has(v) ? state.stages.delete(v) : state.stages.add(v); });
+
+  optionRow(document.getElementById("sortFilters"), [
+    {val:"impact", label:"Most affected first"},
+    {val:"order",  label:"Original numbering"},
+    {val:"stage",  label:"Journey order"}
+  ], true, v => state.sort === v, v => { state.sort = v; });
+}
+buildFilters();
+
+/* ---------- filtering ---------- */
+DATA.forEach(d => {
+  d.hay = (d.n + " " + d.title + " " + d.stage + " " + PEOPLE.map(p => {
+    const e = d.ev[p];
+    return p + " " + (e.note || "") + " " + (e.q || "") + " " + (e.ts || "");
+  }).join(" ")).toLowerCase();
+});
+
+function visible(){
+  let out = DATA.filter(d => {
+    if(state.q && !d.hay.includes(state.q)) return false;
+    if(state.spread === "wide"  && d.fr < 4) return false;
+    if(state.spread === "split" && d.fr !== 3) return false;
+    if(state.spread === "few"   && d.fr > 2) return false;
+    if(state.spread === "mixed" && d.wk === 0) return false;
+    if(state.stages.size && !state.stages.has(d.stage)) return false;
+    if(state.people.size && ![...state.people].some(p => ["f","s"].includes(d.ev[p].s))) return false;
+    return true;
+  });
+  if(state.sort === "impact") out.sort((a,b) => b.fr - a.fr || b.sup - a.sup || a.n - b.n);
+  if(state.sort === "order")  out.sort((a,b) => a.n - b.n);
+  if(state.sort === "stage")  out.sort((a,b) => STAGES.indexOf(a.stage) - STAGES.indexOf(b.stage) || a.n - b.n);
+  return out;
+}
+
+/* ---------- render ---------- */
+function evidenceHTML(d){
+  const focus = state.people.size;
+  return PEOPLE.map(p => {
+    const e = d.ev[p];
+    const dim = e.s === "n" || (focus && !state.people.has(p));
+    return `<div class="ev ${dim ? "muted" : ""}">
+      <div class="ev-top"><span class="ev-name">${p}</span><span class="ev-tag ${CLASS[e.s]}">${LABEL[e.s]}</span></div>
+      <p class="ev-note">${e.note || "No evidence from this session."}</p>
+      ${e.q ? `<blockquote>“${e.q}”</blockquote>` : ""}
+      ${e.ts ? `<div class="ts">${e.ts}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+function render(){
+  buildFilters(); syncHead();
+  const rows = visible();
+  const body = document.getElementById("tbody");
+
+  document.getElementById("count").textContent =
+    rows.length === DATA.length ? `Showing all ${DATA.length} findings` : `${rows.length} of ${DATA.length} findings`;
+
+  if(!rows.length){
+    body.innerHTML = `<tr><td colspan="8"><div class="empty"><p>No findings match those filters.</p>
+      <button class="ghost" id="emptyReset">Clear all filters</button></div></td></tr>`;
+    document.getElementById("emptyReset").onclick = () => document.getElementById("reset").click();
+    return;
+  }
+
+  body.innerHTML = rows.map(d => {
+    const isOpen = openSet.has(d.n);
+    return `
+    <tr class="row ${isOpen ? "open" : ""}" data-n="${d.n}" tabindex="0" role="button" aria-expanded="${isOpen}">
+      <td class="title">
+        <span class="num">${d.n}</span>${d.title}
+        <span class="stage">${d.stage}</span>
+        <span class="inline-pips">${PEOPLE.map(p => `<i class="pip ${CLASS[d.ev[p].s]}" title="${p}: ${LABEL[d.ev[p].s]}"></i>`).join("")}</span>
+      </td>
+      ${PEOPLE.map(p => `<td class="cell"><i class="dot ${CLASS[d.ev[p].s]}" title="${p}: ${LABEL[d.ev[p].s]}"></i></td>`).join("")}
+      <td class="score">${d.fr} of 5</td>
+      <td class="chev"><span>▾</span></td>
+    </tr>
+    <tr class="detail ${isOpen ? "open" : ""}" data-detail="${d.n}">
+      <td colspan="8">
+        ${evidenceHTML(d)}
+        <div class="detail-foot"><button class="ghost" data-copy="${d.n}">Copy this finding</button></div>
+      </td>
+    </tr>`;
+  }).join("");
+
+  body.querySelectorAll("tr.row").forEach(r => {
+    const toggle = () => {
+      const n = +r.dataset.n;
+      const detail = body.querySelector(`[data-detail="${n}"]`);
+      if(openSet.has(n)){ openSet.delete(n); r.classList.remove("open"); detail.classList.remove("open"); }
+      else { openSet.add(n); r.classList.add("open"); detail.classList.add("open"); }
+      r.setAttribute("aria-expanded", openSet.has(n));
+    };
+    r.onclick = toggle;
+    r.onkeydown = e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); } };
+  });
+  body.querySelectorAll("[data-copy]").forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    copy(asMarkdown(DATA.find(d => d.n === +b.dataset.copy)), "Finding copied");
+  });
+}
+
+/* ---------- export ---------- */
+function asMarkdown(d){
+  let s = `## ${d.n}. ${d.title}\n_${d.stage} — ${d.fr} of 5 hit friction_\n\n`;
+  PEOPLE.forEach(p => {
+    const e = d.ev[p];
+    if(e.s === "n") return;
+    s += `- **${p}** (${LABEL[e.s]}): ${e.note || ""}`;
+    if(e.q) s += ` “${e.q}”`;
+    if(e.ts) s += ` [${e.ts}]`;
+    s += "\n";
+  });
+  return s;
+}
+function copy(text, msg){
+  const done = () => toast(msg);
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done, () => fallback(text, done));
+  } else fallback(text, done);
+}
+function fallback(text, done){
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); done(); } catch(e){ toast("Couldn't copy — select the text instead"); }
+  ta.remove();
+}
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 1900);
+}
+
+/* ---------- wiring ---------- */
+document.getElementById("q").oninput = e => { state.q = e.target.value.trim().toLowerCase(); render(); };
+document.getElementById("reset").onclick = () => {
+  state.q = ""; state.spread = "all"; state.people.clear(); state.stages.clear(); state.sort = "impact";
+  document.getElementById("q").value = ""; render();
+};
+document.getElementById("expandAll").onclick = () => { visible().forEach(d => openSet.add(d.n)); render(); };
+document.getElementById("collapseAll").onclick = () => { openSet.clear(); render(); };
+document.getElementById("copyAll").onclick = () => {
+  const rows = visible();
+  copy(`# Opencare usability findings (${rows.length} of ${DATA.length})\n\n` + rows.map(asMarkdown).join("\n"),
+       `${rows.length} findings copied`);
+};
+
+render();
+</script>
